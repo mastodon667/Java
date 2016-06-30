@@ -10,7 +10,7 @@ public class IDPParser {
         String strStage = "Fase = {1.." + programme.getStages() + "}";
         String strCourse = "Vak = {";
         String strGroup = "VakGroep = {";
-        String strEcts = "Studiepunten = {0.." + programme.getMaxEcts() + "}";
+        String strEcts = "Studiepunten = {-" + programme.getMaxEcts() + ".." + programme.getMaxEcts() + "}";
 
         // predicaten
         String strIsType = "IsType = {";

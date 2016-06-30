@@ -16,13 +16,11 @@ import data.Group;
 @SuppressWarnings("serial")
 public class GroupPanel extends JPanel {
 
-	private Group group;
 	private GroupObserver observer;
 	private ArrayList<CoursePanel> coursePanels;
 	private ArrayList<GroupPanel> groupPanels;
 	
 	public GroupPanel(Group group, Observer o) {
-		this.group = group;
 		coursePanels = new ArrayList<CoursePanel>();
 		groupPanels = new ArrayList<GroupPanel>();
 		observer = new GroupObserver();

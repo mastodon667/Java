@@ -184,8 +184,6 @@ public class Group {
 		String s = "";
 		for (Course course : mandatoryCourses)
 			s += course.getCode() + "," + name + ";";
-		for (Course course : optionalCourses)
-			s += course.getCode() + "," + name + ";";
 		for (Group group : groups)
 			s += group.printMandatoryCourses();
 		return s;

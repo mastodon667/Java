@@ -26,6 +26,7 @@ public class JSONReader {
 					s += line;
 					line = br.readLine();
 				}
+			br.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {

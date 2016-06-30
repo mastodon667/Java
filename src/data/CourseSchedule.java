@@ -19,7 +19,7 @@ public class CourseSchedule {
 		boolean duplicate = false;
 		for (Lesson l : lessons) {
 			if (l.getWeek() == lesson.getWeek())
-				if (l.getId().equals(lesson.getId())) {
+				if (l.getId() == lesson.getId()) {
 					duplicate = true;
 					break;
 				}
@@ -30,8 +30,20 @@ public class CourseSchedule {
 		}
 	}
 	
+	protected TreeSet<Integer> getWeeks() {
+		return weeks;
+	}
+	
 	protected String getCode() {
 		return code;
+	}
+	
+	protected ArrayList<Lesson> getLessons(int week, int day) {
+		ArrayList<Lesson> lessons = new ArrayList<Lesson>();
+		for (Lesson lesson : this.lessons)
+			if (lesson.getWeek() == week && lesson.getWeekday() == day)
+				lessons.add(lesson);
+		return lessons;
 	}
 	
 	public String printLessons(int week) {

@@ -50,6 +50,7 @@ public class HistoryPanel extends JPanel {
 		for (HistoryLabel lblHistory : actions) 
 			pnlActions.add(lblHistory);
 		pnlActions.revalidate();
+		pnlActions.repaint();
 	}
 	
 }

@@ -20,6 +20,7 @@ import javax.swing.WindowConstants;
 import observer.SolutionDialogObservable;
 import data.Course;
 
+@SuppressWarnings("serial")
 public class SolutionDialog extends JDialog implements ActionListener {
 
 	private HashMap<Integer, HashMap<Course, Course>> solutions;
@@ -70,8 +71,13 @@ public class SolutionDialog extends JDialog implements ActionListener {
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		//TODO: add functionality
-		
+		ArrayList<Course> choices = new ArrayList<Course>();
+		for (JRadioButton rbtnSolution : buttons)
+			if (rbtnSolution.isSelected())
+				choices = new ArrayList<Course>(solutions.get(Integer.parseInt(rbtnSolution.getName())).values());
+		observable.confirm(choices);
+		setVisible(false);
+		dispose();
 	}
 
 }

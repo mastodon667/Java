@@ -1,6 +1,7 @@
 package automaton;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -55,45 +56,6 @@ public class Automaton {
 		for (State s : states.get(key))
 			s.relax();
 	}
-
-	public State getFinalState() {
-		return finalState;
-	}
-
-	public State getInitialState() {
-		return initialState;
-	}
-
-	//		public boolean develop(int i, List<State> list, String e) {
-	//			if (list.isEmpty())
-	//				return false;
-	//			if (i > states.size()) {
-	//				interpretations.add(e);
-	//				System.out.println(e);
-	//				return false;
-	//			}
-	//			List<State> keep = new ArrayList<State>();
-	//			List<State> relax = new ArrayList<State>();
-	//			String h = "";
-	//			for (State state : list) {
-	//				h = state.getVariable();
-	//				for (Transition transition : state.getoTransitions()) {
-	//					if (transition.isOptimal())
-	//						if (transition.getWeight() > 0)
-	//							relax.add(transition.getTo());
-	//						else {
-	//							
-	//							keep.add(transition.getTo());
-	//						}
-	//				}
-	//			}
-	//			List<String> _e = new ArrayList<String>(e);
-	//			_e.add(h);
-	//			if (develop(i+1,keep,e + " " + h + " - " + transition.getVal()))
-	//				return true;
-	//			else
-	//				return develop(i+1,relax,e);
-	//		}
 	
 	public void showRestoration() {
 		int i = 1;
@@ -106,13 +68,24 @@ public class Automaton {
 		}
 	}
 	
-	
+	public ArrayList<HashMap<String, Character>> calculateSolutions() {
+		interpretations = new ArrayList<String>();
+		restorations = new TreeSet<String>();
+		ArrayList<HashMap<String, Character>> solutions = new ArrayList<HashMap<String,Character>>();
+		develop(initialState, "", "");
+		for (String solution : restorations) {
+			HashMap<String, Character> sol = new HashMap<String, Character>();
+			for (String code : solution.split(" "))
+				sol.put(code, selection.get(code));
+			solutions.add(sol);
+		}
+		return solutions;
+	}
 
-	public void develop(State state, String e, String relax) {
+	private void develop(State state, String e, String relax) {
 		if (state == finalState) {
 			interpretations.add(e.trim());
 			restorations.add(relax.trim());
-			//System.out.println(e);
 		}
 		String h = state.getVariable();;
 		for (Transition transition : state.getoTransitions()) {

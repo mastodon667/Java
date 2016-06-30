@@ -1,5 +1,7 @@
 package data;
 
+import handlers.InferenceHandler;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -51,8 +53,8 @@ public class UserAction extends Action {
 	private void put(Course oCourse, Course nCourse, ArrayList<String> oList, ArrayList<String> nList) {
 		if (nCourse != null)
 			if (!(oCourse.equals(nCourse))) {
-				before.put(oCourse.getCode(), oCourse);
-				after.put(nCourse.getCode(), nCourse);
+				before.put(oCourse.getCode(), oCourse.clone());
+				after.put(nCourse.getCode(), nCourse.clone());
 				oList.add(oCourse.getCode());
 				nList.add(nCourse.getCode());
 			}
@@ -76,6 +78,43 @@ public class UserAction extends Action {
 		}
 		return s;
 	}
+	
+	public Course getOldCourse(String code) {
+		return before.get(code);
+	}
 
+	public Course getNewCourse(String code) {
+		return after.get(code);
+	}
+	
+	public ArrayList<Course> getBefore() {
+		return new ArrayList<Course>(before.values());
+	}
+	
+	public ArrayList<String> getNewPropagations() {
+		return newPropagations;
+	}
+	
+	public ArrayList<Course> getChoices() {
+		ArrayList<Course> choices = new ArrayList<Course>();
+		for (String code : oldChoices) {
+			if (newChoices.contains(code)) {
+				Course oCourse = before.get(code);
+				Course nCourse = after.get(code);
+				if (!oCourse.equals(nCourse))
+					choices.add(oCourse);
+			}
+			else
+				choices.add(before.get(code));
+		}
+		for (String code : newChoices)
+			if (!oldChoices.contains(code))
+				choices.add(after.get(code).init());
+		return choices;
+	}
 
+	@Override
+	public void undoAction(InferenceHandler handler) {
+		handler.undoAction(this);
+	}
 }

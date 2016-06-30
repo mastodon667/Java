@@ -1,5 +1,6 @@
 package gui;
 
+import global.Singleton;
 import handlers.InferenceHandler;
 
 import java.awt.BorderLayout;
@@ -29,10 +30,11 @@ public class SelectionPanel extends JPanel implements ActionListener, Observer, 
 	private JComboBox<String> cboParameter;
 	private JFrame parent;
 	
-	public SelectionPanel(JFrame parent, String path) {
+	public SelectionPanel(JFrame parent, Singleton s, Observer o) {
 		setLayout(new BorderLayout());
 		this.parent = parent;
-		handler = new InferenceHandler(path);
+		handler = new InferenceHandler(s,(SelectionPanelInterface)this);
+		handler.addObserver(o);
 		pnlProgramme = new GroupPanel(handler.getProgramme(), this);
 		JScrollPane spProgramme = new JScrollPane(pnlProgramme, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		pnlHistory = new HistoryPanel();
@@ -70,8 +72,12 @@ public class SelectionPanel extends JPanel implements ActionListener, Observer, 
 				handler.minimize(cboParameter.getSelectedItem().toString());
 			else if (text.equals("ECTS Distributie"))
 				System.out.println("SHOW DISTRIBUTION");
-			else if (text.equals("Maak Ongedaan"))
-				pnlHistory.undoAction();
+			else if (text.equals("Maak Ongedaan")) {
+				Action a = pnlHistory.undoAction();
+				if (a != null)
+					a.undoAction(handler);
+			}
+				
 		}
 		refresh();
 	}
@@ -80,16 +86,17 @@ public class SelectionPanel extends JPanel implements ActionListener, Observer, 
 		pnlProgramme.refresh();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void update(Observable o, Object arg) {
-		handler.update((SelectionPanelInterface)this, (ArrayList<Course>)arg);
+		handler.update((ArrayList<Course>)arg);
 		refresh();
 	}
 
 	@Override
 	public void showSolutionPopup(ArrayList<HashMap<Course, Course>> solutions) {
-		
-		
+		SolutionDialog dlgSolution = new SolutionDialog(parent, this, solutions);		
+		dlgSolution.setVisible(true);
 	}
 
 	@Override
@@ -101,5 +108,9 @@ public class SelectionPanel extends JPanel implements ActionListener, Observer, 
 	@Override
 	public void addAction(Action action) {
 		pnlHistory.addAction(action);
+	}
+	
+	protected Observable getHandler() {
+		return handler;
 	}
 }

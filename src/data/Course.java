@@ -90,6 +90,10 @@ public class Course {
 		return clone;
 	}
 	
+	public Course init() {
+		return new Course(code, name, ects, semester, stages);
+	}
+	
 	/**
 	 * PRINT FUNCTIONS
 	 */

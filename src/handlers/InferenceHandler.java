@@ -1,18 +1,23 @@
 package handlers;
 
+import global.Singleton;
 import gui.SelectionPanelInterface;
 import idp.IDPISP;
+
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Observable;
 import parser.IDPParser;
 import automaton.Automaton;
+import reader.AutomatonReader;
 import reader.JSONReader;
 import data.Course;
 import data.Group;
 import data.InferenceAction;
+import data.Message;
 import data.UserAction;
 
-public class InferenceHandler {
+public class InferenceHandler extends Observable {
 
 	private HashMap<String, Course> cUserChoices;
 	private HashMap<String, Course> bUserChoices;
@@ -23,11 +28,14 @@ public class InferenceHandler {
 	private IDPParser parser;
 	private IDPTranslator translator;
 	private IDPISP isp;
+	private SelectionPanelInterface pnlSelection;
 
-	public InferenceHandler(String path) {
-		JSONReader reader = new JSONReader(path);
+	public InferenceHandler(Singleton s, SelectionPanelInterface pnlSelection) {
+		this.pnlSelection = pnlSelection;
+		JSONReader reader = new JSONReader(s.getJsonPath());
 		parser = new IDPParser();
-		isp = new IDPISP();
+		isp = new IDPISP(s);
+		automaton = new AutomatonReader(s.getVariablesPath(), s.getAutomatonPath()).getAutomaton();
 		cUserChoices = new HashMap<String, Course>();
 		bUserChoices = new HashMap<String, Course>();
 		iProgramme = reader.getProgramme();
@@ -60,15 +68,22 @@ public class InferenceHandler {
 		translator.filter(output);
 		for (Course course : translator.getCourses())
 			cProgramme.update(course);
+		pnlSelection.addAction(new InferenceAction("Expansie", new ArrayList<Course>(bProgramme.getAllCourses().values()), new ArrayList<Course>(cProgramme.getAllCourses().values())));
+		update();
+		bProgramme = cProgramme.clone();
 	}
 
 	public void minimize(String term) {
 		String input = parser.parseISPStructure(cProgramme);
 		translator.filter(input);
 		String output = isp.minimize(input, term);
+		System.out.println(output);
 		translator.filter(output);
 		for (Course course : translator.getCourses())
 			cProgramme.update(course);
+		pnlSelection.addAction(new InferenceAction("Minimizatie (" + term + ")", new ArrayList<Course>(bProgramme.getAllCourses().values()), new ArrayList<Course>(cProgramme.getAllCourses().values())));
+		update();
+		bProgramme = cProgramme.clone();
 	}
 
 	private boolean sat() {
@@ -77,13 +92,42 @@ public class InferenceHandler {
 	}
 
 	private ArrayList<HashMap<Course, Course>> calculateSolutions() {
-
-		return null;
+		ArrayList<HashMap<Course, Course>> solutions = new ArrayList<HashMap<Course,Course>>();
+		ArrayList<HashMap<String, Character>> sols = automaton.calculateSolutions();
+		for (HashMap<String, Character> sol : sols) {
+			HashMap<Course, Course> solution = new HashMap<Course, Course>();
+			for (String code : sol.keySet()) {
+				Course c = cUserChoices.get(code);
+				solution.put(c, c.init());
+			}
+			solutions.add(solution);
+		}
+		return solutions;
 	}
-
-	public InferenceAction createInferenceAction() {
-
-		return null;
+	
+	public void undoAction(UserAction action) {
+		for (Course course : action.getBefore())
+			cProgramme.update(course);
+		updateChoices(action.getChoices());
+		bUserChoices = new HashMap<String, Course>(cUserChoices);
+		update();
+		bProgramme = cProgramme.clone();
+		if (!action.getNewPropagations().isEmpty()) {
+			ArrayList<Course> before = new ArrayList<Course>();
+			ArrayList<Course> after = new ArrayList<Course>();
+			for (String code : action.getNewPropagations()) {
+				after.add(action.getOldCourse(code));
+				before.add(action.getNewCourse(code));
+			}
+			pnlSelection.showPropagationPopup(before, after);
+		}
+	}
+	
+	public void undoAction(InferenceAction action) {
+		for (Course course : action.getBefore())
+			cProgramme.update(course);
+		update();
+		bProgramme = cProgramme.clone();
 	}
 
 	private Group buildProgramme(ArrayList<Course> choices) {
@@ -93,18 +137,17 @@ public class InferenceHandler {
 		return programme;
 	}
 
-	public void update(SelectionPanelInterface pnlSelection, ArrayList<Course> newChoices) {
+	public void update(ArrayList<Course> newChoices) {
 		updateChoices(newChoices);
 		if (sat())
-			selectionStep(pnlSelection, newChoices);
-		else 
+			selectionStep(newChoices);
+		else
 			pnlSelection.showSolutionPopup(calculateSolutions());
 	}
 
-	private void selectionStep(SelectionPanelInterface pnlSelection, ArrayList<Course> newChoices) {
+	private void selectionStep(ArrayList<Course> newChoices) {
 		Group programme = buildProgramme(new ArrayList<Course>(cUserChoices.values()));
 		propagate(programme);
-
 		HashMap<String, Course> oldPropagations = getPropagations(new ArrayList<String>(bUserChoices.keySet()), bProgramme);
 		HashMap<String, Course> newUnknowns = getUnknowns(new ArrayList<String>(cUserChoices.keySet()), programme);
 
@@ -124,11 +167,12 @@ public class InferenceHandler {
 		if (before.isEmpty()) {
 			HashMap<String, Course> newPropagations = getPropagations(new ArrayList<String>(cUserChoices.keySet()), programme);
 			HashMap<String, Course> oldUnknowns = getUnknowns(new ArrayList<String>(bUserChoices.keySet()), bProgramme);
-			pnlSelection.addAction(new UserAction(bUserChoices, cUserChoices, oldPropagations, newPropagations, oldUnknowns, newUnknowns));
 			for (Course course : programme.getAllCourses().values())
 				cProgramme.update(course);
-			bUserChoices = new HashMap<String, Course>(cUserChoices);
+			pnlSelection.addAction(new UserAction(bUserChoices, cUserChoices, oldPropagations, newPropagations, oldUnknowns, newUnknowns));
+			update();
 			bProgramme = cProgramme.clone();
+			bUserChoices = new HashMap<String, Course>(cUserChoices);
 		}
 		else 
 			pnlSelection.showPropagationPopup(before, after);
@@ -159,19 +203,37 @@ public class InferenceHandler {
 
 	private void updateChoices(ArrayList<Course> newChoices) {
 		for (Course choice : newChoices) {
-			if (choice.getNotInterested())
+			if (choice.getNotInterested()) {
 				cUserChoices.put(choice.getCode(), choice.clone());
-			else if (choice.getSelected() != Course.notSelected)
+				String s = choice.getSelected() + "";
+				automaton.addSelection(choice.getCode(), s.charAt(0));
+			}
+			else if (choice.getSelected() != Course.notSelected) {
 				cUserChoices.put(choice.getCode(), choice.clone());
-			else
+				String s = choice.getSelected() + "";
+				automaton.addSelection(choice.getCode(), s.charAt(0));
+			}
+			else {
 				cUserChoices.remove(choice.getCode());
+				automaton.removeSelection(choice.getCode());
+			}
 		}
-//		System.out.println("VOORGAANDE KEUZES");
-//		for (Course c : bUserChoices.values())
-//			System.out.println(c.getCode() + " " + c.getSelected() + " " + c.getNotInterested());
-//		System.out.println("HUIDIGE KEUZES");
-//		for (Course c : cUserChoices.values())
-//			System.out.println(c.getCode() + " " + c.getSelected() + " " + c.getNotInterested());
-//		System.out.println();
+	}
+	
+	private void update() {
+		HashMap<String, Integer> add = new HashMap<String, Integer>();
+		ArrayList<String> remove = new ArrayList<String>();
+		HashMap<String, Course> before = bProgramme.getAllCourses();
+		HashMap<String, Course> after = cProgramme.getAllCourses();
+		for (Course oCourse : before.values()) {
+			Course nCourse = after.get(oCourse.getCode());
+			if (!oCourse.equals(nCourse)) {
+				remove.add(oCourse.getCode());
+				if (nCourse.getSelected() != Course.notSelected)
+					add.put(nCourse.getCode(), nCourse.getSelected());
+			}
+		}
+		setChanged();
+		notifyObservers(new Message(add, remove));
 	}
 }

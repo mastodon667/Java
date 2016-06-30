@@ -1,6 +1,6 @@
 package idp;
 
-import global.GlobalVariables;
+import global.Singleton;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -19,9 +19,11 @@ public class IDPISP {
 	private String vocabulary;
 	private String unsatVocabulary;
 	private String theory;
+	private Singleton s;
 
-	public IDPISP() {
-		String path = GlobalVariables.PROJECT_LOCATION + "src/files/isp/";
+	public IDPISP(Singleton s) {
+		this.s = s;
+		String path = s.getIspPath();
 		inferences = new HashMap<String, String>();
 		readMap(inferences, path + "inference.txt");
 		terms = new HashMap<String, String>();
@@ -81,7 +83,7 @@ public class IDPISP {
 	private String open(String input, String inference, String term) {
 		String output = "";
 		try {
-			Process p = Runtime.getRuntime().exec(GlobalVariables.IDP_LOCATION);
+			Process p = Runtime.getRuntime().exec(s.IDP_LOCATION);
 			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			BufferedWriter out = new BufferedWriter(new OutputStreamWriter(p.getOutputStream()));
 			out.write(input);
@@ -100,12 +102,12 @@ public class IDPISP {
 	}
 	
 	public ArrayList<String> getTerms() {
-		return new ArrayList<String>(terms.values());
+		return new ArrayList<String>(terms.keySet());
 	}
 	
 	public boolean sat(String structure) {
 		String input = build(structure, "sat");
-		return open(input, "sat", "").contains("true"); 
+		return open(input, "sat", "").contains("true");
 	}
 	
 	public String unsat(String structure) {

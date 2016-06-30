@@ -8,6 +8,7 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
+@SuppressWarnings("serial")
 public class GroupNamepanel extends JPanel {
 	
 	public GroupNamepanel(String name) {
