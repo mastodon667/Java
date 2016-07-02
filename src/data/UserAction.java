@@ -1,12 +1,11 @@
 package data;
 
-import handlers.InferenceHandler;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class UserAction extends Action {
 
+	private String text;
 	private ArrayList<String> oldChoices;
 	private ArrayList<String> newChoices;
 	private ArrayList<String> oldPropagations;
@@ -19,6 +18,7 @@ public class UserAction extends Action {
 	public UserAction(HashMap<String,Course> oChoices, HashMap<String,Course> nChoices, 
 			HashMap<String,Course> oProps, HashMap<String,Course> nProps, 
 			HashMap<String,Course> oUnknowns, HashMap<String,Course> nUnknowns) {
+		setText(oChoices, nChoices);
 		oldChoices = new ArrayList<String>();
 		newChoices = new ArrayList<String>();
 		oldPropagations = new ArrayList<String>();
@@ -59,24 +59,41 @@ public class UserAction extends Action {
 				nList.add(nCourse.getCode());
 			}
 	}
+	
+	private void setText(HashMap<String, Course> oChoices, HashMap<String, Course> nChoices) {
+		ArrayList<Course> courses = new ArrayList<Course>();
+		for (String code : oChoices.keySet()) {
+			if (nChoices.containsKey(code)) {
+				Course oCourse = oChoices.get(code);
+				Course nCourse = nChoices.get(code);
+				if (!oCourse.equals(nCourse))
+					courses.add(nCourse);
+			}
+			else 
+				courses.add(oChoices.get(code).init());
+		}
+		for (String code : nChoices.keySet())
+			if (!oChoices.containsKey(code))
+				courses.add(nChoices.get(code));
+		
+		text = "";
+		for (Course course : courses) {
+			text += "[" + course.getCode() + "] ";
+			if (course.getNotInterested()) {
+				text += "Not Interested. ";
+			}
+			else if (course.getSelected() != Course.notSelected) {
+				text += "Fase " + course.getSelected() + ". ";
+			}
+			else {
+				text += "Deselected. ";
+			}
+		}
+	}
 
 	@Override
 	public String toString() {
-		String s = "";
-		for (String code : newChoices) {
-			s += "[" + code + "] ";
-			Course t = after.get(code);
-			if (t.getNotInterested()) {
-				s += "Not Interested. ";
-			}
-			else if (t.getSelected() != Course.notSelected) {
-				s += "Fase " + t.getSelected() + ". ";
-			}
-			else {
-				s += "Deselected. ";
-			}
-		}
-		return s;
+		return text;
 	}
 	
 	public Course getOldCourse(String code) {
@@ -111,10 +128,5 @@ public class UserAction extends Action {
 			if (!oldChoices.contains(code))
 				choices.add(after.get(code).init());
 		return choices;
-	}
-
-	@Override
-	public void undoAction(InferenceHandler handler) {
-		handler.undoAction(this);
 	}
 }

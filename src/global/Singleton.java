@@ -32,6 +32,10 @@ public final class Singleton {
     public String getIspPath() {
 		return PROJECT_LOCATION + "src/files/isp/";
 	}
+    
+    public String getExplanationsPath() {
+		return PROJECT_LOCATION + "src/files/explanations/";
+	}
 	
 	public String getSchedulePath() {
 		return PROJECT_LOCATION + "src/files/schedule/";

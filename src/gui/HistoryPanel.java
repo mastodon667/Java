@@ -29,9 +29,10 @@ public class HistoryPanel extends JPanel {
 	
 	
 	public void addAction(Action action) {
-		if (!action.toString().isEmpty())
+		if (!action.toString().isEmpty()) {
 			actions.add(new HistoryLabel(action));
 			updateHistory();
+		}
 	}
 	
 	public Action undoAction() {

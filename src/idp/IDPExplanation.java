@@ -1,6 +1,7 @@
 package idp;
 
 import global.Singleton;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
@@ -8,28 +9,25 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
 import java.util.HashMap;
 
-public class IDPISP {
-
+public class IDPExplanation {
 	private HashMap<String, String> inferences;
-	private HashMap<String, String> terms;
 	private String vocabulary;
-	//private String unsatVocabulary;
+	private String unsatVocabulary;
 	private String theory;
+	private String unsatStructure;
 	private Singleton s;
 
-	public IDPISP(Singleton s) {
+	public IDPExplanation(Singleton s) {
 		this.s = s;
-		String path = s.getIspPath();
+		String path = s.getExplanationsPath();
 		inferences = new HashMap<String, String>();
 		readMap(inferences, path + "inference.txt");
-		terms = new HashMap<String, String>();
-		readMap(terms, path + "terms.txt");
 		vocabulary = read(path + "vocabulary.txt");
-		//unsatVocabulary = read(path + "unsatvoc.txt");
+		unsatVocabulary = read(path + "unsatvoc.txt");
 		theory = read(path + "theory.txt");
+		unsatStructure = read(path + "unsatstruc.txt");
 	}
 	
 	private String read(String path) {
@@ -74,10 +72,12 @@ public class IDPISP {
 		input += "Theory T : V { \n";
 		input += theory + "}\n\n";
 		input += "Structure S : V { \n";
-		input += structure + "}\n\n";
+		input += structure + "\n";
+		input += unsatStructure + "}\n\n";
+		input += "Vocabulary U { \n";
+		input += unsatVocabulary + "}\n\n";
 		input += "Procedure main() { \n";
-		input += inferences.get(inference) + "\n";
-		input += "}\n";
+		input += inferences.get(inference) + "\n}\n";
 		return input;
 	}
 	
@@ -102,34 +102,8 @@ public class IDPISP {
 		return output;
 	}
 	
-	public ArrayList<String> getTerms() {
-		return new ArrayList<String>(terms.keySet());
-	}
-	
-	public boolean sat(String structure) {
-		String input = build(structure, "sat");
-		return open(input, "sat", "").contains("true");
-	}
-	
 	public String unsat(String structure) {
 		String input = build(structure, "unsat");
 		return open(input, "unsat", "");
-	}
-	
-	public String expand(String structure) {
-		String input = build(structure, "expansion");
-		return open(input, "expansion", "");
-	}
-	
-	public String propagate(String structure) {
-		String input = build(structure, "propagation");
-		return open(input, "propagation", "");
-	}
-	
-	public String minimize(String structure, String term) {
-		String input = build(structure, "minimization");
-		input += "Term O : V { \n";
-		input += terms.get(term) + "\n}\n\n";
-		return open(input, "minimization", "(" + term + ")");
 	}
 }

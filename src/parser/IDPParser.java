@@ -72,7 +72,7 @@ public class IDPParser {
     	String strInFase = "InFase = {";
     	String strInGroup = "InVakGroep = {";
     	String strSelected = "Geselecteerd<ct> = {";
-    	String strNotInterested = "NietGeselecteerd = {";
+    	String strNotInterested = "GeenInteresse = {";
 
         // functies
     	String strMinEcts = "MinAantalStudiepunten<ct> = {";

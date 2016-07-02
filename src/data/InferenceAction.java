@@ -1,7 +1,5 @@
 package data;
 
-import handlers.InferenceHandler;
-
 import java.util.ArrayList;
 
 public class InferenceAction extends Action {
@@ -19,11 +17,6 @@ public class InferenceAction extends Action {
 	@Override
 	public String toString() {
 		return inference;
-	}
-
-	@Override
-	public void undoAction(InferenceHandler handler) {
-		handler.undoAction(this);
 	}
 	
 	public ArrayList<Course> getBefore() {

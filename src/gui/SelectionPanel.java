@@ -20,6 +20,7 @@ import javax.swing.JScrollPane;
 
 import data.Action;
 import data.Course;
+import data.Group;
 
 @SuppressWarnings("serial")
 public class SelectionPanel extends JPanel implements ActionListener, Observer, SelectionPanelInterface {
@@ -30,11 +31,10 @@ public class SelectionPanel extends JPanel implements ActionListener, Observer, 
 	private JComboBox<String> cboParameter;
 	private JFrame parent;
 	
-	public SelectionPanel(JFrame parent, Singleton s, Observer o) {
+	public SelectionPanel(JFrame parent, Singleton s, InferenceHandler handler) {
 		setLayout(new BorderLayout());
 		this.parent = parent;
-		handler = new InferenceHandler(s,(SelectionPanelInterface)this);
-		handler.addObserver(o);
+		this.handler = handler;
 		pnlProgramme = new GroupPanel(handler.getProgramme(), this);
 		JScrollPane spProgramme = new JScrollPane(pnlProgramme, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		pnlHistory = new HistoryPanel();
@@ -67,17 +67,16 @@ public class SelectionPanel extends JPanel implements ActionListener, Observer, 
 		if (e.getSource() instanceof JButton) {
 			String text = ((JButton)e.getSource()).getText();
 			if (text.equals("Genereer ISP"))
-				handler.expand();
+				handler.expand(this);
 			else if (text.equals("Optimaal ISP"))
-				handler.minimize(cboParameter.getSelectedItem().toString());
+				handler.minimize(this, cboParameter.getSelectedItem().toString());
 			else if (text.equals("ECTS Distributie"))
-				System.out.println("SHOW DISTRIBUTION");
+				showDistributionPopup();
 			else if (text.equals("Maak Ongedaan")) {
 				Action a = pnlHistory.undoAction();
 				if (a != null)
-					a.undoAction(handler);
-			}
-				
+					handler.undoAction(this, a);
+			}	
 		}
 		refresh();
 	}
@@ -89,13 +88,13 @@ public class SelectionPanel extends JPanel implements ActionListener, Observer, 
 	@SuppressWarnings("unchecked")
 	@Override
 	public void update(Observable o, Object arg) {
-		handler.update((ArrayList<Course>)arg);
+		handler.update(this, (ArrayList<Course>)arg);
 		refresh();
 	}
 
 	@Override
-	public void showSolutionPopup(ArrayList<HashMap<Course, Course>> solutions) {
-		SolutionDialog dlgSolution = new SolutionDialog(parent, this, solutions);		
+	public void showSolutionPopup(ArrayList<HashMap<Course, Course>> solutions, ArrayList<String> brokenRules) {
+		SolutionDialog dlgSolution = new SolutionDialog(parent, this, solutions, brokenRules);		
 		dlgSolution.setVisible(true);
 	}
 
@@ -103,6 +102,12 @@ public class SelectionPanel extends JPanel implements ActionListener, Observer, 
 	public void showPropagationPopup(ArrayList<Course> before, ArrayList<Course> after) {
 		PropagationDialog dlgPropagation = new PropagationDialog(parent, this, before, after);
 		dlgPropagation.setVisible(true);
+	}
+	
+	public void showDistributionPopup() {
+		Group programme = handler.getProgramme();
+		DistributionDialog dlgDistribution = new DistributionDialog(parent, programme.getAllMinEcts(), programme.getAllMaxEcts(), programme.getDistribution());
+		dlgDistribution.setVisible(true);
 	}
 
 	@Override

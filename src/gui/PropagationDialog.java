@@ -31,6 +31,7 @@ public class PropagationDialog extends JDialog implements ActionListener {
 		setLayout(new BorderLayout());
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		setSize(500, 400);
+		setLocation(parent.getX()+parent.getWidth()/2-250, parent.getY()+parent.getHeight()/2-200);
 		this.before = before;
 		this.after = after;
 		checkboxes = new ArrayList<JCheckBox>();

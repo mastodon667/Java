@@ -2,15 +2,18 @@ package handlers;
 
 import global.Singleton;
 import gui.SelectionPanelInterface;
+import idp.IDPExplanation;
 import idp.IDPISP;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Observable;
+
 import parser.IDPParser;
 import automaton.Automaton;
 import reader.AutomatonReader;
 import reader.JSONReader;
+import data.Action;
 import data.Course;
 import data.Group;
 import data.InferenceAction;
@@ -27,14 +30,15 @@ public class InferenceHandler extends Observable {
 	private Automaton automaton;
 	private IDPParser parser;
 	private IDPTranslator translator;
+	private IDPExplanationTranslator explanationTranslator;
 	private IDPISP isp;
-	private SelectionPanelInterface pnlSelection;
+	private IDPExplanation explanation;
 
-	public InferenceHandler(Singleton s, SelectionPanelInterface pnlSelection) {
-		this.pnlSelection = pnlSelection;
+	public InferenceHandler(Singleton s) {
 		JSONReader reader = new JSONReader(s.getJsonPath());
 		parser = new IDPParser();
 		isp = new IDPISP(s);
+		explanation = new IDPExplanation(s);
 		automaton = new AutomatonReader(s.getVariablesPath(), s.getAutomatonPath()).getAutomaton();
 		cUserChoices = new HashMap<String, Course>();
 		bUserChoices = new HashMap<String, Course>();
@@ -42,6 +46,7 @@ public class InferenceHandler extends Observable {
 		cProgramme = iProgramme.clone();
 		bProgramme = iProgramme.clone();
 		translator = new IDPTranslator(iProgramme.getAllCourses());
+		explanationTranslator = new IDPExplanationTranslator(s);
 	}
 
 	public Group getProgramme() {
@@ -61,7 +66,7 @@ public class InferenceHandler extends Observable {
 			programme.update(course);
 	}
 
-	public void expand() {
+	public void expand(SelectionPanelInterface pnlSelection) {
 		String input = parser.parseISPStructure(cProgramme);
 		translator.filter(input);
 		String output = isp.expand(input);
@@ -73,7 +78,7 @@ public class InferenceHandler extends Observable {
 		bProgramme = cProgramme.clone();
 	}
 
-	public void minimize(String term) {
+	public void minimize(SelectionPanelInterface pnlSelection, String term) {
 		String input = parser.parseISPStructure(cProgramme);
 		translator.filter(input);
 		String output = isp.minimize(input, term);
@@ -105,7 +110,19 @@ public class InferenceHandler extends Observable {
 		return solutions;
 	}
 	
-	public void undoAction(UserAction action) {
+	private ArrayList<String> findBrokenRules() {
+		Group programme = buildProgramme(new ArrayList<Course>(cUserChoices.values()));
+		return explanationTranslator.findBrokenRules(explanation.unsat(parser.parseExplanationStructure(programme)));
+	}
+	
+	public void undoAction(SelectionPanelInterface pnlSelection, Action action) {
+		if (action instanceof UserAction)
+			undoAction(pnlSelection, (UserAction)action);
+		else
+			undoAction(pnlSelection, (InferenceAction)action);
+	}
+	
+	private void undoAction(SelectionPanelInterface pnlSelection, UserAction action) {
 		for (Course course : action.getBefore())
 			cProgramme.update(course);
 		updateChoices(action.getChoices());
@@ -123,7 +140,7 @@ public class InferenceHandler extends Observable {
 		}
 	}
 	
-	public void undoAction(InferenceAction action) {
+	private void undoAction(SelectionPanelInterface pnlSelection, InferenceAction action) {
 		for (Course course : action.getBefore())
 			cProgramme.update(course);
 		update();
@@ -137,15 +154,15 @@ public class InferenceHandler extends Observable {
 		return programme;
 	}
 
-	public void update(ArrayList<Course> newChoices) {
+	public void update(SelectionPanelInterface pnlSelection, ArrayList<Course> newChoices) {
 		updateChoices(newChoices);
 		if (sat())
-			selectionStep(newChoices);
+			selectionStep(pnlSelection, newChoices);
 		else
-			pnlSelection.showSolutionPopup(calculateSolutions());
+			pnlSelection.showSolutionPopup(calculateSolutions(), findBrokenRules());
 	}
 
-	private void selectionStep(ArrayList<Course> newChoices) {
+	private void selectionStep(SelectionPanelInterface pnlSelection, ArrayList<Course> newChoices) {
 		Group programme = buildProgramme(new ArrayList<Course>(cUserChoices.values()));
 		propagate(programme);
 		HashMap<String, Course> oldPropagations = getPropagations(new ArrayList<String>(bUserChoices.keySet()), bProgramme);

@@ -19,7 +19,7 @@ import javax.swing.JToggleButton;
 import observer.NavigationObservable;
 
 @SuppressWarnings("serial")
-public class CalendarNavigationPanel extends JPanel implements ActionListener {
+public class NavigationPanel extends JPanel implements ActionListener {
 
 	private HashMap<Integer, Integer> weeks;
 	private int selectedWeek;
@@ -28,7 +28,7 @@ public class CalendarNavigationPanel extends JPanel implements ActionListener {
 	private JLabel lblWeek;
 	private NavigationObservable observable; 
 
-	public CalendarNavigationPanel(int stages, Observer o) {
+	public NavigationPanel(int stages, Observer o) {
 		setLayout(new BorderLayout());
 		setSize(1400, 200);
 		observable = new NavigationObservable();

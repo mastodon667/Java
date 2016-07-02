@@ -12,24 +12,20 @@ import java.util.HashMap;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.TreeSet;
-
 import data.CompleteSchedule;
 import data.CourseSchedule;
 import data.Lesson;
 import data.Message;
 import global.Singleton;
-import gui.CalendarPanelInterface;
 
 public class ScheduleHandler implements Observer {
 
 	private Singleton s;
 	private HashMap<String, CourseSchedule> courseSchedules;
 	private CompleteSchedule schedule;
-	private CalendarPanelInterface pnlCalendar;
 	
-	public ScheduleHandler(Singleton s, int stages, CalendarPanelInterface pnlCalendar) {
+	public ScheduleHandler(Singleton s, int stages) {
 		this.s = s;
-		this.pnlCalendar = pnlCalendar;
 		courseSchedules = new HashMap<String, CourseSchedule>();
 		schedule = new CompleteSchedule(stages);
 	}
@@ -50,6 +46,10 @@ public class ScheduleHandler implements Observer {
 	
 	public TreeSet<Integer> getWeeks(int stage) {
 		return schedule.getWeeks(stage);
+	}
+	
+	public int getStages() {
+		return schedule.getStages();
 	}
 	
 	private void loadSchedule(String code) {
@@ -147,6 +147,5 @@ public class ScheduleHandler implements Observer {
 			for (String code : add.keySet())
 				addCourse(code, add.get(code));
 		}
-		pnlCalendar.refresh();
 	}
 }

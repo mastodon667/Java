@@ -35,4 +35,8 @@ public class CompleteSchedule {
 	public TreeSet<Integer> getWeeks(int stage) {
 		return stageSchedules.get(stage).getWeeks();
 	}
+	
+	public int getStages() {
+		return stageSchedules.size();
+	}
 }

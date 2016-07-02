@@ -11,25 +11,24 @@ import java.util.Observer;
 
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
-import javax.swing.JToolTip;
 
 @SuppressWarnings("serial")
 public class CalendarPanel extends JPanel implements CalendarPanelInterface, Observer, MouseMotionListener {
 	
 	private ScheduleHandler handler;
-	private CalendarNavigationPanel pnlNavigation;
+	private NavigationPanel pnlNavigation;
 	private DayPanel pnlDay;
 	private int currentStage;
 	private int selectedWeek;
 	private String selectedDay;
 
-	public CalendarPanel(Singleton s, int stages) {
+	public CalendarPanel(Singleton s, ScheduleHandler handler) {
 		setLayout(new BorderLayout());
-		handler = new ScheduleHandler(s, stages, (CalendarPanelInterface)this);
+		this.handler = handler;
 		JSplitPane spnlSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		spnlSplit.setDividerLocation(0.5);
 		
-		pnlNavigation = new CalendarNavigationPanel(stages, this);
+		pnlNavigation = new NavigationPanel(handler.getStages(), this);
 		currentStage = pnlNavigation.getStage();
 		selectedWeek = pnlNavigation.getWeek();
 		selectedDay = pnlNavigation.getDay();
@@ -43,6 +42,7 @@ public class CalendarPanel extends JPanel implements CalendarPanelInterface, Obs
 
 	@Override
 	public void refresh() {
+		//TODO: REFRESH WHEN FOCUS
 		pnlNavigation.updateWeeks(handler.getWeeks(currentStage));
 		selectedWeek = pnlNavigation.getWeek();
 		pnlDay.update(handler.getLessons(currentStage, selectedDay, selectedWeek));
@@ -71,8 +71,6 @@ public class CalendarPanel extends JPanel implements CalendarPanelInterface, Obs
 
 	@Override
 	public void mouseDragged(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
