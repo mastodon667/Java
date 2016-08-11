@@ -1,0 +1,3 @@
+!f[Fase] : VerschilPerFase(f) = GeselecteerdAantalStudiepuntenPerSemester(Eerste,f) - GeselecteerdAantalStudiepuntenPerSemester(Tweede,f).
+!f[Fase] : AbsoluutVerschilPerFase(f) = abs(VerschilPerFase(f)).
+TotaalVerschil = sum{f, sp : AbsoluutVerschilPerFase(f) = sp : sp}.

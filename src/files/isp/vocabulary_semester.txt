@@ -1,0 +1,3 @@
+VerschilPerFase(Fase):Studiepunten
+AbsoluutVerschilPerFase(Fase):Studiepunten
+TotaalVerschil:Studiepunten

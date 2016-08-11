@@ -8,7 +8,9 @@ import data.Course;
 
 public interface SelectionPanelInterface {
 
-	public void showSolutionPopup(ArrayList<HashMap<Course, Course>> solutions, ArrayList<String> brokenRules);
+	public void showSolutionPopup(ArrayList<ArrayList<Course>> solutions, ArrayList<String> brokenRules);
+	public void showUnsatPopup(HashMap<String, Course> unsatStructure, ArrayList<String> brokenRules);
 	public void showPropagationPopup(ArrayList<Course> before, ArrayList<Course> after);
+	public void showConfirmationPopup(boolean consistent);
 	public void addAction(Action action);
 }

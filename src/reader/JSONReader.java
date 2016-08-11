@@ -1,20 +1,26 @@
 package reader;
 
+import global.Singleton;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+
 import org.json.*;
+
 import data.Course;
 import data.Group;
 
 public class JSONReader {
 
 	private Group programme; 
+	private ScheduleReader sReader;
 	
-	public JSONReader(String path) {
-		programme = parseProgramme(new JSONObject(read(path)));
+	public JSONReader(Singleton s) {
+		sReader = new ScheduleReader(s);
+		programme = parseProgramme(new JSONObject(read(s.getJsonPath())));
 	}
 	
 	private String read(String path) {
@@ -35,36 +41,32 @@ public class JSONReader {
 		return s;
 	}
 	
+	private Group parseCourseGroup(JSONObject json, int stages) {
+		Group group = new Group(json.getString("naam"), json.getString("groep"), json.getString("type"), 
+				json.getInt("min_studiepunten"), json.getInt("max_studiepunten"), stages);
+		parseCourses(group, json);
+		return group;
+	}
+	
+	private Group parseChoiceGroup(JSONObject json, int stages) {
+		Group group = new Group(json.getString("naam"), json.getString("groep"), json.getString("type"), 
+				0, 0, stages);
+		parseCourses(group, json);
+		return group;
+	}
+	
 	private Group parseProgramme(JSONObject domain) {
-		JSONObject edj = domain.getJSONObject("opleiding");
-		Group programme = new Group(edj.getString("naam"), "Opleiding", edj.getInt("min_studiepunten"), edj.getInt("max_studiepunten"), edj.getInt("fases"));
-		parseCourses(programme, edj);
+		JSONObject json = domain.getJSONObject("opleiding");
+		Group programme = new Group(json.getString("naam"), json.getString("groep"), json.getString("type"), 
+				json.getInt("min_studiepunten"), json.getInt("max_studiepunten"), json.getInt("fases"));
 		
-		JSONObject avod = edj.getJSONObject("avo");
-		Group avo = new Group("Algemeen_Vormend", "AVO", avod.getInt("min_studiepunten"), avod.getInt("max_studiepunten"), edj.getInt("fases"));
-		parseCourses(avo, avod);
-		programme.addGroup(avo);
+		parseCourses(programme, json);
 		
-		JSONObject vsd = edj.getJSONObject("verdere_specialisatie");
-		Group vs = new Group("Verdere", "Verdere_Specialisatie", vsd.getInt("min_studiepunten"), vsd.getInt("max_studiepunten"), edj.getInt("fases"));
-		parseCourses(vs, vsd);
-		programme.addGroup(vs);
+		for (Object groupV : json.getJSONArray("vakgroep"))
+			programme.addCourseGroup(parseCourseGroup((JSONObject)groupV, programme.getStages()));
 		
-		JSONArray bvds = edj.getJSONArray("bachelor_verbredend");
-		for (int i = 0; i < bvds.length(); i++) {
-			JSONObject bvd = bvds.getJSONObject(i);
-			Group bv = new Group(bvd.getString("naam"), "Bachelor_Verbredend", 0, 0, edj.getInt("fases"));
-			parseCourses(bv, bvd);
-			programme.addGroup(bv);
-		}
-		
-		JSONArray sds = edj.getJSONArray("specialisaties");
-		for (int i = 0; i < sds.length(); i++) {
-			JSONObject sd = sds.getJSONObject(i);
-			Group s = new Group(sd.getString("naam"), "Specialisatie", 0, 0, edj.getInt("fases"));
-			parseCourses(s, sd);
-			programme.addGroup(s);
-		}
+		for (Object groupK : json.getJSONArray("keuzegroep"))
+			programme.addChoiceGroup(parseChoiceGroup((JSONObject)groupK, programme.getStages()));
 		
 		return programme;
 	}
@@ -80,10 +82,25 @@ public class JSONReader {
 	
 	private Course parseCourse(JSONObject domain) {
 		ArrayList<Integer> stages = new ArrayList<Integer>();
-		for (Object s : domain.getJSONArray("fases")) {
+		for (Object s : domain.getJSONArray("fases"))
 			stages.add((int)s);
+		Course course = new Course(domain.getString("code"), domain.getString("naam"), 
+				domain.getInt("punten"), domain.getInt("semester"), stages,sReader.getSchedule(domain.getString("code")));
+		if (domain.has("verbonden"))
+			for (Object code : domain.getJSONArray("verbonden"))
+				course.addConnection((String) code);
+		if (domain.has("voorwaarde"))
+			course.addCondition(1, domain.getString("voorwaarde"));
+		if (domain.has("gelijktijdigheden")) {
+			int count = 1;
+			for (Object sim : domain.getJSONArray("gelijktijdigheden")) {
+				String id = course.getCode() + "_sim" + count;
+				for (Object code : (JSONArray)sim)
+					course.addSimultaneousCourse(id, code.toString());
+				count++;
+			}
 		}
-		return new Course(domain.getString("code"), domain.getString("naam"), domain.getInt("punten"), domain.getInt("semester"), stages);
+		return course;
 	}
 	
 	public Group getProgramme() {

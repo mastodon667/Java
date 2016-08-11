@@ -42,10 +42,15 @@ public class CoursePanel extends JPanel implements ActionListener {
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.insets = new Insets(5, 5, 5, 5);
 		
-		gbc.fill = GridBagConstraints.BOTH;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.weightx = 1.0;
-		gbc.gridwidth = GridBagConstraints.REMAINDER;
+		gbc.gridwidth = 2;
 		add(new JLabel(course.getName() + " (" + course.getEcts() + ")"), gbc);
+		
+		gbc.gridx = 2;
+		gbc.gridy = 0;
+		gbc.gridwidth = 1;
+		add(new JLabel(course.getCode()));
 		
 		gbc.gridx = 0;
 		gbc.gridy = 2;
@@ -65,7 +70,7 @@ public class CoursePanel extends JPanel implements ActionListener {
 		gbc.gridy = 1;
 		gbc.ipadx = 30;
 		gbc.ipady = 30;
-		gbc.gridwidth = 2;
+		gbc.gridwidth = 1;
 		gbc.gridheight = 2;
 		gbc.fill = GridBagConstraints.BOTH;
 		add(new SemesterPanel(course.getSemester()), gbc);
@@ -89,6 +94,7 @@ public class CoursePanel extends JPanel implements ActionListener {
 		for (String key : map.keySet())
 			if (map.get(key) == course.getSelected())
 				cboStages.setSelectedItem(key);
+		cboStages.setEnabled(!tbtnNotInterested.isSelected());
 		callback = true;
 	}
 }

@@ -1,2 +1,3 @@
-Semester;Evenwicht
+Semester;TotaalVerschil
 Studiepunten;GeselecteerdAantalStudiepuntenTotaal
+Lessenrooster;OverlapTotaal

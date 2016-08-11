@@ -35,11 +35,11 @@ public class InferenceHandler extends Observable {
 	private IDPExplanation explanation;
 
 	public InferenceHandler(Singleton s) {
-		JSONReader reader = new JSONReader(s.getJsonPath());
+		JSONReader reader = new JSONReader(s);
 		parser = new IDPParser();
 		isp = new IDPISP(s);
 		explanation = new IDPExplanation(s);
-		automaton = new AutomatonReader(s.getVariablesPath(), s.getAutomatonPath()).getAutomaton();
+		automaton = new AutomatonReader(s.getVariablesPath(), s.getAutomatonPath(), s).getAutomaton();
 		cUserChoices = new HashMap<String, Course>();
 		bUserChoices = new HashMap<String, Course>();
 		iProgramme = reader.getProgramme();
@@ -58,18 +58,18 @@ public class InferenceHandler extends Observable {
 	}
 
 	public void propagate(Group programme) {
-		String input = parser.parseISPStructure(programme);
+		String input = parser.parseStructure(programme, "");
 		translator.filter(input);
-		String output = isp.propagate(input);
+		String output = isp.propagate(input, programme.countFreeVariables());
 		translator.filter(output);
 		for (Course course : translator.getCourses())
 			programme.update(course);
 	}
 
 	public void expand(SelectionPanelInterface pnlSelection) {
-		String input = parser.parseISPStructure(cProgramme);
+		String input = parser.parseStructure(cProgramme, "");
 		translator.filter(input);
-		String output = isp.expand(input);
+		String output = isp.expand(input, cProgramme.countFreeVariables());
 		translator.filter(output);
 		for (Course course : translator.getCourses())
 			cProgramme.update(course);
@@ -79,10 +79,9 @@ public class InferenceHandler extends Observable {
 	}
 
 	public void minimize(SelectionPanelInterface pnlSelection, String term) {
-		String input = parser.parseISPStructure(cProgramme);
+		String input = parser.parseStructure(cProgramme, term.toLowerCase());
 		translator.filter(input);
-		String output = isp.minimize(input, term);
-		System.out.println(output);
+		String output = isp.minimize(input, term, cProgramme.countFreeVariables());
 		translator.filter(output);
 		for (Course course : translator.getCourses())
 			cProgramme.update(course);
@@ -93,26 +92,36 @@ public class InferenceHandler extends Observable {
 
 	private boolean sat() {
 		Group programme = buildProgramme(new ArrayList<Course>(cUserChoices.values()));
-		return isp.sat(parser.parseISPStructure(programme));
+		return isp.sat(parser.parseStructure(programme, ""), programme.countFreeVariables());
+	}
+	
+	public void isConsistent(SelectionPanelInterface pnlSelection) {
+		pnlSelection.showConfirmationPopup(isp.consistent(parser.parseStructure(cProgramme, "consistent"), cProgramme.countFreeVariables()));
 	}
 
-	private ArrayList<HashMap<Course, Course>> calculateSolutions() {
-		ArrayList<HashMap<Course, Course>> solutions = new ArrayList<HashMap<Course,Course>>();
+	private ArrayList<ArrayList<Course>> calculateSolutions() {
+		ArrayList<ArrayList<Course>> solutions = new ArrayList<ArrayList<Course>>();
 		ArrayList<HashMap<String, Character>> sols = automaton.calculateSolutions();
 		for (HashMap<String, Character> sol : sols) {
-			HashMap<Course, Course> solution = new HashMap<Course, Course>();
-			for (String code : sol.keySet()) {
-				Course c = cUserChoices.get(code);
-				solution.put(c, c.init());
-			}
+			ArrayList<Course> solution = new ArrayList<Course>();
+			for (String code : sol.keySet())
+				solution.add(cUserChoices.get(code));
 			solutions.add(solution);
 		}
 		return solutions;
 	}
 	
+	private HashMap<String, Course> calculateUnsatStructure() {
+		Group programme = buildProgramme(new ArrayList<Course>(cUserChoices.values()));
+		HashMap<String, Course> unsatStructure = new HashMap<String, Course>();
+		for (String code : translator.filterUnsat(isp.unsat(parser.parseStructure(programme, ""), programme.countFreeVariables())))
+			unsatStructure.put(code, cUserChoices.get(code));
+		return unsatStructure;
+	}
+	
 	private ArrayList<String> findBrokenRules() {
 		Group programme = buildProgramme(new ArrayList<Course>(cUserChoices.values()));
-		return explanationTranslator.findBrokenRules(explanation.unsat(parser.parseExplanationStructure(programme)));
+		return explanationTranslator.findBrokenRules(explanation.unsat(parser.parseStructure(programme, ""), programme.countFreeVariables()));
 	}
 	
 	public void undoAction(SelectionPanelInterface pnlSelection, Action action) {
@@ -158,8 +167,12 @@ public class InferenceHandler extends Observable {
 		updateChoices(newChoices);
 		if (sat())
 			selectionStep(pnlSelection, newChoices);
-		else
-			pnlSelection.showSolutionPopup(calculateSolutions(), findBrokenRules());
+		else {
+			if (automaton != null)
+				pnlSelection.showSolutionPopup(calculateSolutions(), findBrokenRules());
+			else
+				pnlSelection.showUnsatPopup(calculateUnsatStructure(), findBrokenRules());
+		}
 	}
 
 	private void selectionStep(SelectionPanelInterface pnlSelection, ArrayList<Course> newChoices) {
@@ -222,23 +235,28 @@ public class InferenceHandler extends Observable {
 		for (Course choice : newChoices) {
 			if (choice.getNotInterested()) {
 				cUserChoices.put(choice.getCode(), choice.clone());
-				String s = choice.getSelected() + "";
-				automaton.addSelection(choice.getCode(), s.charAt(0));
+				if (automaton != null) {
+					String s = choice.getSelected() + "";
+					automaton.addSelection(choice.getCode(), s.charAt(0));
+				}
 			}
 			else if (choice.getSelected() != Course.notSelected) {
 				cUserChoices.put(choice.getCode(), choice.clone());
-				String s = choice.getSelected() + "";
-				automaton.addSelection(choice.getCode(), s.charAt(0));
+				if (automaton != null) {
+					String s = choice.getSelected() + "";
+					automaton.addSelection(choice.getCode(), s.charAt(0));
+				}
 			}
 			else {
 				cUserChoices.remove(choice.getCode());
-				automaton.removeSelection(choice.getCode());
+				if (automaton != null)
+					automaton.removeSelection(choice.getCode());
 			}
 		}
 	}
 	
 	private void update() {
-		HashMap<String, Integer> add = new HashMap<String, Integer>();
+		HashMap<Course, Integer> add = new HashMap<Course, Integer>();
 		ArrayList<String> remove = new ArrayList<String>();
 		HashMap<String, Course> before = bProgramme.getAllCourses();
 		HashMap<String, Course> after = cProgramme.getAllCourses();
@@ -247,7 +265,7 @@ public class InferenceHandler extends Observable {
 			if (!oCourse.equals(nCourse)) {
 				remove.add(oCourse.getCode());
 				if (nCourse.getSelected() != Course.notSelected)
-					add.put(nCourse.getCode(), nCourse.getSelected());
+					add.put(nCourse, nCourse.getSelected());
 			}
 		}
 		setChanged();

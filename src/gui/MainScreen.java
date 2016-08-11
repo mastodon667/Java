@@ -23,7 +23,7 @@ public class MainScreen extends JFrame {
 
 		Singleton s = Singleton.getInstance();
 		InferenceHandler iHandler = new InferenceHandler(s);
-		ScheduleHandler sHandler = new ScheduleHandler(s, iHandler.getProgramme().getStages());
+		ScheduleHandler sHandler = new ScheduleHandler(iHandler.getProgramme().getStages());
 		iHandler.addObserver(sHandler);
 		
 		tpPanels = new JTabbedPane();
@@ -33,7 +33,6 @@ public class MainScreen extends JFrame {
 		tpPanels.add(pnlCalendar,"Schedule");
 		add(tpPanels);
 		tpPanels.addChangeListener(new ChangeListener() {
-			
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				if (tpPanels.getSelectedIndex() == 1)

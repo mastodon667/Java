@@ -5,7 +5,7 @@ import java.util.Observable;
 
 import data.Course;
 
-public class PropagationDialogObservable extends Observable {
+public class DialogObservable extends Observable {
 
 	public void confirm(ArrayList<Course> result) {
 		setChanged();

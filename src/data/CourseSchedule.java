@@ -46,7 +46,7 @@ public class CourseSchedule {
 		return lessons;
 	}
 	
-	public String printLessons(int week) {
+	public String printLesson(int week) {
 		String s = "";
 		for (Lesson l : lessons) {
 			if (l.getWeek() == week)
@@ -64,7 +64,7 @@ public class CourseSchedule {
 		return s;
 	}
 	
-	public String printStart(int week) {
+	public String printStarts(int week) {
 		String s = "";
 		for (Lesson l : lessons) {
 			if (l.getWeek() == week)
@@ -73,7 +73,7 @@ public class CourseSchedule {
 		return s;
 	}
 	
-	public String printEnd(int week) {
+	public String printEnds(int week) {
 		String s = "";
 		for (Lesson l : lessons) {
 			if (l.getWeek() == week)

@@ -1,0 +1,6 @@
+OverlapTotaal = sum{ f o : OverlapPerFase(f) = o : o }.
+!f[Fase] : OverlapPerFase(f) = OverlapEersteSemesterPerFase(f) + OverlapTweedeSemesterPerFase(f).
+!f[Fase] : OverlapEersteSemesterPerFase(f) = sum{ v1 v2 o : Geselecteerd(v1,f) & Geselecteerd(v2,f) & (InSemester(v1) = Eerste | InSemester(v1) = Jaar) & (InSemester(v2) = Eerste | InSemester(v2) = Jaar) & OverlapPerVak(v1,v2) = o : o }.
+!f[Fase] : OverlapTweedeSemesterPerFase(f) = sum{ v1 v2 o : Geselecteerd(v1,f) & Geselecteerd(v2,f) & (InSemester(v1) = Tweede | InSemester(v1) = Jaar) & (InSemester(v2) = Tweede | InSemester(v2) = Jaar) & OverlapPerVak(v1,v2) = o : o }.
+!v1[Vak],v2[Vak] : OverlapPerVak(v1,v2) = sum{ l1 l2 o : HeeftLes(v1,l1) & HeeftLes(v2,l2) & OverlapPerLes(l1,l2) = o : o }.
+!l1[Les],l2[Les] : OverlapPerLes(l1,l2) = max{ o : o = 0 | o = (min{e[Slot] : Eindigt(l1,e) | Eindigt(l2,e) : e} - max{s[Slot] : Start(l1,s) | Start(l2,s) : s}) : o}.

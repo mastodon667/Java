@@ -1,6 +1,8 @@
 {
   "opleiding": {
-    "naam": "Master_in_de_Toegepaste_Informatica",
+    "naam": "Master in de toegepaste informatica",
+    "groep": "Master_in_de_Toegepaste_Informatica",
+    "type": "Opleiding",
     "fases": 1,
     "min_studiepunten": 60,
     "max_studiepunten": 66,
@@ -23,9 +25,13 @@
       ],
       "keuze": []
     },
-    "avo": {
+    "vakgroep": [
+	{
+	  "naam": "Verbredend pakket",
+      "groep": "Algemeen_Vormend",
+      "type": "AlgemeenVormend",
       "min_studiepunten": 0,
-      "max_studiepunten": 0,
+      "max_studiepunten": 24,
       "vakken": {
         "verplicht": [],
         "keuze": [
@@ -70,10 +76,13 @@
           }
         ]
       }
-    },
-    "specialisaties": [
-      {
-        "naam": "Software_ontwikkeling_en_Gedistribueerde_Systemen",
+    }
+	],
+    "keuzegroep": [
+	  {
+        "naam": "Software-ontwikkeling en gedistribueerde systemen",
+		"groep": "Software_Ontwikkeling_En_Gedistribueerde_Systemen",
+		"type": "Specialisatie",
         "vakken": {
           "verplicht": [
             {
@@ -139,6 +148,8 @@
       },
       {
         "naam": "Multimedia",
+		"groep": "Multimedia",
+		"type": "Specialisatie",
         "vakken": {
           "verplicht": [
             {
@@ -159,6 +170,9 @@
               "code": "H04I2A",
               "fases": [1],
               "naam": "Informatie visualisatie",
+              "gelijktijdigheden": [
+              ["G0Q55A"]
+              ],
               "punten": 4,
               "semester": 2
             },
@@ -166,6 +180,10 @@
               "code": "G0B36A",
               "fases": [1],
               "naam": "Computergrafiek 2",
+              "gelijktijdigheden": [
+              ["G0Q66B"],
+              ["G0Q66C","H07Z5A"]
+              ],
               "punten": 4,
               "semester": 2
             },
@@ -173,6 +191,9 @@
               "code": "H07Z5A",
               "fases": [1],
               "naam": "Computergrafiek: project",
+              "gelijktijdigheden": [
+              ["G0Q66C"]
+              ],
               "punten": 3,
               "semester": 2
             }
@@ -189,6 +210,7 @@
               "code": "H05B9B",
               "fases": [1],
               "naam": "Advanced Platform Architectures and Mapping Methods for Embedded Applications",
+              "voorwaarde": "((SOEPEL (H05D5A) EN SOEPEL (H09I0A)) OF (SOEPEL (H05D3A) EN SOEPEL (H09J6A)))",
               "punten": 3,
               "semester": 1
             },
@@ -210,7 +232,9 @@
         }
       },
       {
-        "naam": "Artificiele_Intelligentie",
+        "naam": "Artificiële intelligentie",
+		"groep": "Artificiele_Intelligentie",
+		"type": "Specialisatie",
         "vakken": {
           "verplicht": [
             {
@@ -245,6 +269,9 @@
               "code": "H0T25A",
               "fases": [1],
               "naam": "Machine Learning: Project",
+              "gelijktijdigheden": [
+              ["H02C1A"]
+              ],
               "punten": 3,
               "semester": 2
             }
@@ -281,17 +308,6 @@
           ]
         }
       }
-    ],
-    "verdere_specialisatie": {
-      "min_studiepunten": 0,
-      "max_studiepunten": 0,
-      "vakken": {
-        "verplicht": [],
-        "keuze": []
-      }
-    },
-    "bachelor_verbredend": []
+	]
   }
 }
-
-

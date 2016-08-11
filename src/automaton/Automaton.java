@@ -1,5 +1,10 @@
 package automaton;
 
+import global.Singleton;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,13 +21,17 @@ public class Automaton {
 	private Map<String, Character> selection;
 	private List<String> interpretations;
 	private Set<String> restorations;
+	private HashMap<String, Character> errors;
+	private Singleton s;
 
-	public Automaton(State initialState) {
+	public Automaton(State initialState, Singleton s) {
 		this.initialState = initialState;
+		this.s = s;
 		states = new TreeMap<String, List<State>>();
 		selection = new TreeMap<String, Character>();
 		interpretations = new ArrayList<String>();
 		restorations = new TreeSet<String>();
+		errors = new HashMap<String, Character>();
 		init(this.initialState);
 	}
 
@@ -46,40 +55,56 @@ public class Automaton {
 	}
 
 	public void addSelection(String key, char val) {
-		selection.put(key, val);
-		for (State s : states.get(key))
-			s.update(val);
+		if (getDomain(key).contains(val)) {
+			selection.put(key, val);
+			for (State s : states.get(key))
+				s.update(val);
+		}
+		else
+			errors.put(key,val);
 	}
 
 	public void removeSelection(String key) {
-		selection.remove(key);
-		for (State s : states.get(key))
-			s.relax();
-	}
-	
-	public void showRestoration() {
-		int i = 1;
-		for (String restoration : restorations) {
-			System.out.println("Solution " + i);
-			for (String key : restoration.split(" "))
-				System.out.println("UNDO: " + key + " - " + selection.get(key));
-			System.out.println("------------");
-			i++;
+		if (errors.containsKey(key))
+			errors.remove(key);
+		else {
+			selection.remove(key);
+			for (State s : states.get(key))
+				s.relax();
 		}
 	}
-	
+
+	private ArrayList<Character> getDomain(String code) {
+		TreeSet<Character> domain = new TreeSet<Character>();
+		for (State state : states.get(code))
+			domain.addAll(state.getDomain());
+		return new ArrayList<Character>(domain);
+	}
+
 	public ArrayList<HashMap<String, Character>> calculateSolutions() {
 		interpretations = new ArrayList<String>();
 		restorations = new TreeSet<String>();
 		ArrayList<HashMap<String, Character>> solutions = new ArrayList<HashMap<String,Character>>();
-		develop(initialState, "", "");
-		for (String solution : restorations) {
-			HashMap<String, Character> sol = new HashMap<String, Character>();
-			for (String code : solution.split(" "))
-				sol.put(code, selection.get(code));
-			solutions.add(sol);
+		if (isConsistent()) {
+			solutions.add(errors);
+			return solutions;
 		}
-		return solutions;
+		else {
+			long startTime = System.nanoTime();
+			develop(initialState, "", "");
+			long endTime = System.nanoTime();
+			writeTime("solutions" + " ()", startTime, endTime, states.size() - selection.size());
+			for (String solution : restorations) {
+				HashMap<String, Character> sol = new HashMap<String, Character>();
+				for (String code : solution.split(" "))
+					if (!code.isEmpty())
+						sol.put(code, selection.get(code));
+				for (String code : errors.keySet())
+					sol.put(code, errors.get(code));
+				solutions.add(sol);
+			}
+			return solutions;
+		}
 	}
 
 	private void develop(State state, String e, String relax) {
@@ -87,7 +112,7 @@ public class Automaton {
 			interpretations.add(e.trim());
 			restorations.add(relax.trim());
 		}
-		String h = state.getVariable();;
+		String h = state.getVariable();
 		for (Transition transition : state.getoTransitions()) {
 			if (transition.isOptimal()) {
 				if (transition.getWeight() > 0)
@@ -101,38 +126,15 @@ public class Automaton {
 	public boolean isConsistent() {
 		return finalState.getlCost()==0;
 	}
-
-	public void printCounts() {
-		int total = 1;
-		for (List<State> s : states.values()) {
-			System.out.println(s.size());
-			total += s.size();
+	
+	private void writeTime(String line, long startTime, long endTime, int freeVariables) {
+		try {
+			BufferedWriter bw = new BufferedWriter(new FileWriter(s.getResultPath(), true));
+			long duration = endTime - startTime;
+			bw.write((line + " - " + ((double)duration)/1000000) + " - " + freeVariables + "\n");
+			bw.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		System.out.println(total);
 	}
-
-	//	public void printResult() {
-	//		for (String key : states.keySet())
-	//			printVarResult(key);
-	//	}
-
-	//	private void printVarResult(String key) {
-	//		for (State state : states.get(key)) {
-	//			System.out.printf("%15s",state.getLine1());
-	//		}
-	//		System.out.println("");
-	//		for (State state : states.get(key)) {
-	//			System.out.printf("%15s",state.getLine2());
-	//		}
-	//		System.out.println("");
-	//		for (State state : states.get(key)) {
-	//			System.out.printf("%15s",state.getLineX('0'));
-	//		}
-	//		System.out.println("");
-	//		for (State state : states.get(key)) {
-	//			System.out.printf("%15s",state.getLineX('1'));
-	//		}
-	//		System.out.println("");
-	//		System.out.println("");
-	//	}
 }

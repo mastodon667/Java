@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -28,6 +29,17 @@ public class IDPExplanation {
 		unsatVocabulary = read(path + "unsatvoc.txt");
 		theory = read(path + "theory.txt");
 		unsatStructure = read(path + "unsatstruc.txt");
+	}
+	
+	private void writeTime(String line, long startTime, long endTime, int freeVariables) {
+		try {
+			BufferedWriter bw = new BufferedWriter(new FileWriter(s.getResultPath(), true));
+			long duration = endTime - startTime;
+			bw.write((line + " - " + ((double)duration)/1000000) + " - " + freeVariables + "\n");
+			bw.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private String read(String path) {
@@ -81,8 +93,9 @@ public class IDPExplanation {
 		return input;
 	}
 	
-	private String open(String input, String inference, String term) {
+	private String open(String input, String inference, String term, int freeVariables) {
 		String output = "";
+		long startTime = System.nanoTime();
 		try {
 			Process p = Runtime.getRuntime().exec(s.IDP_LOCATION);
 			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -99,11 +112,13 @@ public class IDPExplanation {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		long endTime = System.nanoTime();
+		writeTime(inference + " (" + term + ")", startTime, endTime, freeVariables);
 		return output;
 	}
 	
-	public String unsat(String structure) {
+	public String unsat(String structure, int freeVariables) {
 		String input = build(structure, "unsat");
-		return open(input, "unsat", "");
+		return open(input, "explanation", "", freeVariables);
 	}
 }

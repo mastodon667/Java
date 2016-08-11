@@ -26,16 +26,9 @@ public class State {
 		counts = new TreeMap<Character, Integer>();
 	}
 	
-//	public void printRandomPath() {
-//		if (oTransitions.size()>0) {
-//			int r = (int)Math.random()*oTransitions.size();
-//			Transition t = oTransitions.get(r);
-//			System.out.print("("+variable+")--"+t.getVal()+"-->");
-//			if (t.getTo().getVariable().equals(""))
-//				System.out.println("END");
-//			t.getTo().printRandomPath();
-//		}
-//	}
+	protected ArrayList<Character> getDomain() {
+		return new ArrayList<Character>(counts.keySet());
+	}
 	
 	public void addoTransition(Transition transition) {
 		oTransitions.add(transition);
@@ -94,7 +87,6 @@ public class State {
 	public void recalculaterCost() {
 		int r = calculaterCost();
 		if (r != rCost) {
-			//System.out.println("State: " + variable + " new rCost " + r);
 			rCost = r;
 			for (Transition t : iTransitions) {
 				t.getFrom().recalculaterCost();
@@ -151,20 +143,5 @@ public class State {
 			if (o.getVal() == letter)
 				return o;
 		return null;
-	}
-	
-	public String getLine1() {
-		return variable;
-	}
-	public String getLine2() {
-		return lCost + " | " + rCost;
-	}
-	public String getLineX(char v) {
-		String s = "";
-		for (Transition t : oTransitions) {
-			if (v == t.getVal())
-				s += "--" + t.getVal()+ "(" + t.getWeight() + ")-->";
-		}
-		return s;
 	}
 }

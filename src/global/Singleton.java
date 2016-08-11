@@ -59,7 +59,7 @@ public final class Singleton {
 	}
 	
 	public String getResultPath() {
-		return PROJECT_LOCATION + "src/files/log/result.txt";
+		return PROJECT_LOCATION + "src/files/log/results.txt";
 	}
 	
 	public String getAutomatonPath() {

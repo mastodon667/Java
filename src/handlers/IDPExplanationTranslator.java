@@ -38,7 +38,7 @@ public class IDPExplanationTranslator {
 	public ArrayList<String> findBrokenRules(String input) {
 		ArrayList<String> brokenRules = new ArrayList<String>();
 		for (String line : input.split("\n")) {
-			if (line.contains("satisfied<ct>")) {
+			if (line.contains("Consistent<ct>")) {
 				for (int rule : rules.keySet())
 					if (line.contains(rule + ""))
 						brokenRules.add(rules.get(rule));

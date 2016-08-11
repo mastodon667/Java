@@ -1,0 +1,1 @@
+GeselecteerdAantalStudiepuntenTotaal = sum{v, sp, f : Geselecteerd(v,f) & AantalStudiepunten(v) = sp : sp }.

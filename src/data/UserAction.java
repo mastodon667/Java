@@ -6,6 +6,8 @@ import java.util.HashMap;
 public class UserAction extends Action {
 
 	private String text;
+	private HashMap<String, Course> nCourses;
+	private HashMap<String, Course> oCourses;
 	private ArrayList<String> oldChoices;
 	private ArrayList<String> newChoices;
 	private ArrayList<String> oldPropagations;
@@ -19,6 +21,12 @@ public class UserAction extends Action {
 			HashMap<String,Course> oProps, HashMap<String,Course> nProps, 
 			HashMap<String,Course> oUnknowns, HashMap<String,Course> nUnknowns) {
 		setText(oChoices, nChoices);
+		oCourses = new HashMap<String, Course>();
+		for (Course course : oChoices.values())
+			oCourses.put(course.getCode(), course);
+		nCourses = new HashMap<String, Course>();
+		for (Course course : nChoices.values())
+			nCourses.put(course.getCode(), course.init());
 		oldChoices = new ArrayList<String>();
 		newChoices = new ArrayList<String>();
 		oldPropagations = new ArrayList<String>();
@@ -109,24 +117,22 @@ public class UserAction extends Action {
 	}
 	
 	public ArrayList<String> getNewPropagations() {
+		for (String code : oCourses.keySet())
+			newPropagations.remove(code);
 		return newPropagations;
 	}
 	
 	public ArrayList<Course> getChoices() {
 		ArrayList<Course> choices = new ArrayList<Course>();
-		for (String code : oldChoices) {
-			if (newChoices.contains(code)) {
-				Course oCourse = before.get(code);
-				Course nCourse = after.get(code);
-				if (!oCourse.equals(nCourse))
-					choices.add(oCourse);
-			}
+		for (Course course : nCourses.values()) {
+			if (oCourses.containsKey(course.getCode()))
+				choices.add(oCourses.get(course.getCode()));
 			else
-				choices.add(before.get(code));
+				choices.add(course);
 		}
-		for (String code : newChoices)
-			if (!oldChoices.contains(code))
-				choices.add(after.get(code).init());
+		for (Course course : oCourses.values())
+			if (!nCourses.containsKey(course.getCode()))
+				choices.add(course);
 		return choices;
 	}
 }

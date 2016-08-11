@@ -67,7 +67,6 @@ public class CalendarPanel extends JPanel implements CalendarPanelInterface, Obs
 	protected Observer getHandler() {
 		return handler;
 	}
-	
 
 	@Override
 	public void mouseDragged(MouseEvent e) {

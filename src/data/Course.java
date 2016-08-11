@@ -1,6 +1,7 @@
 package data;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Course {
 	
@@ -10,17 +11,25 @@ public class Course {
 	private int ects;
 	private int semester;
 	private ArrayList<Integer> stages;
+	private ArrayList<String> connected;
 	private int selected;
 	private boolean notInterested;
+	private CourseSchedule schedule;
+	private HashMap<String, ArrayList<String>> simultaneous;
+	private HashMap<String, String> conditions;
 	
-	public Course(String code, String name, int ects, int semester, ArrayList<Integer> stages) {
+	public Course(String code, String name, int ects, int semester, ArrayList<Integer> stages, CourseSchedule schedule) {
 		this.code = code;
 		this.name = name;
 		this.ects = ects;
 		this.semester = semester;
 		this.stages = new ArrayList<Integer>(stages);
+		connected = new ArrayList<String>();
 		selected = notSelected;
 		notInterested = false;
+		this.schedule = schedule;
+		simultaneous = new HashMap<String, ArrayList<String>>();
+		conditions = new HashMap<String, String>();
 	}
 	
 	public void setSelected(int stage) {
@@ -37,6 +46,10 @@ public class Course {
 		this.notInterested = notInterested;
 		if (notInterested)
 			setSelected(notSelected);
+	}
+	
+	public void addConnection(String course) {
+		connected.add(course);
 	}
 	
 	public String getName() {
@@ -67,6 +80,29 @@ public class Course {
 		return stages;
 	}
 	
+	public CourseSchedule getSchedule() {
+		return schedule;
+	}
+	
+	protected boolean isFree() {
+		if (notInterested)
+			return false;
+		if (selected != notSelected)
+			return false;
+		return true;
+	}
+	
+	public void addSimultaneousCourse(String sim, String course) {
+		if (!simultaneous.containsKey(sim))
+			simultaneous.put(sim, new ArrayList<String>());
+		simultaneous.get(sim).add(course);
+	}
+	
+	public void addCondition(int count, String condition) {
+		String id = code + "_con" + count;
+		conditions.put(id, condition);
+	}
+	
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == null)
@@ -84,14 +120,21 @@ public class Course {
 	}
 	
 	public Course clone() {
-		Course clone = new Course(code, name, ects, semester, stages);
+		Course clone = init();
 		clone.selected = selected;
 		clone.notInterested = notInterested;
 		return clone;
 	}
 	
 	public Course init() {
-		return new Course(code, name, ects, semester, stages);
+		Course init = new Course(code, name, ects, semester, stages, schedule);
+		for (String code : connected)
+			init.addConnection(code);
+		for (String code : simultaneous.keySet())
+			init.simultaneous.put(code, simultaneous.get(code));
+		for (String id : conditions.keySet())
+			init.conditions.put(id, conditions.get(id));
+		return init;
 	}
 	
 	/**
@@ -144,6 +187,85 @@ public class Course {
 				s += "Niet geselecteerd.";
 			else
 				s += "Fase " + selected + ".";
+		return s;
+	}
+	
+	public String printLesson() {
+		String s = "";
+		if (semester == 1)
+			s += schedule.printLesson(45);
+		if (semester > 1)
+			s += schedule.printLesson(12);
+		return s;
+	}
+	
+	public String printHasLesson() {
+		String s = "";
+		if (semester == 1)
+			s += schedule.printHasLesson(45);
+		if (semester > 1)
+			s += schedule.printHasLesson(12);
+		return s;
+	}
+	
+	public String printStarts() {
+		String s = "";
+		if (semester == 1)
+			s += schedule.printStarts(45);
+		if (semester > 1)
+			s += schedule.printStarts(12);
+		return s;
+	}
+	
+	public String printEnds() {
+		String s = "";
+		if (semester == 1)
+			s += schedule.printEnds(45);
+		if (semester > 1)
+			s += schedule.printEnds(12);
+		return s;
+	}
+	
+	public String printConnected() {
+		String s = "";
+		for (String code : connected)
+			s += this.code + "," + code + ";";
+		return s;
+	}
+	
+	public String printSimultaneous() {
+		String s = "";
+		for (String sim : simultaneous.keySet())
+			s += sim + ";";
+		return s;
+	}
+	
+	public String printHasSimultaneous() {
+		String s = "";
+		for (String sim : simultaneous.keySet())
+			s += code + "," + sim + ";";
+		return s;
+	}
+	
+	public String printHasCourse() {
+		String s = "";
+		for (String sim : simultaneous.keySet())
+			for (String code : simultaneous.get(sim))
+				s += sim + "," + code + ";";
+		return s;
+	}
+	
+	public String printCondition() {
+		String s = "";
+		for (String id : conditions.keySet())
+			s += id + ";";
+		return s;
+	}
+	
+	public String printHasCondition() {
+		String s = "";
+		for (String id : conditions.keySet())
+			s += code + "," + id + ";";
 		return s;
 	}
 }

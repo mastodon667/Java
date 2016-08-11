@@ -21,12 +21,13 @@ import observer.NavigationObservable;
 @SuppressWarnings("serial")
 public class NavigationPanel extends JPanel implements ActionListener {
 
-	private HashMap<Integer, Integer> weeks;
+	private HashMap<Integer, HashMap<Integer, Integer>> year;
 	private int selectedWeek;
+	private int currentSemester;
 	private ArrayList<JRadioButton> stages;
 	private ArrayList<JToggleButton> days;
 	private JLabel lblWeek;
-	private NavigationObservable observable; 
+	private NavigationObservable observable;
 
 	public NavigationPanel(int stages, Observer o) {
 		setLayout(new BorderLayout());
@@ -58,8 +59,10 @@ public class NavigationPanel extends JPanel implements ActionListener {
 		JPanel pnlBottom1 = new JPanel();
 		pnlBottom1.setLayout(new BoxLayout(pnlBottom1, BoxLayout.X_AXIS));
 		JButton btnPrevious = new JButton("Vorige week");
+		btnPrevious.setName("previous");
 		btnPrevious.addActionListener(this);
 		JButton btnNext = new JButton("Volgende week");
+		btnNext.setName("next");
 		btnNext.addActionListener(this);
 
 		pnlBottom1.add(btnPrevious);
@@ -103,18 +106,22 @@ public class NavigationPanel extends JPanel implements ActionListener {
 	}
 
 	protected void updateWeeks(TreeSet<Integer> weeks) {
-		this.weeks = new HashMap<Integer, Integer>();
+		currentSemester = 1;
+		year = new HashMap<Integer, HashMap<Integer,Integer>>();
+		year.put(1, new HashMap<Integer, Integer>());
+		year.put(2, new HashMap<Integer, Integer>());
 		if (!weeks.isEmpty()) {
 			Integer week = weeks.higher(26);
 			int count = 1;
 			while (week != null) {
-				this.weeks.put(count, week);
+				year.get(1).put(count, week);
 				count++;
 				week = weeks.higher(week);
 			}
 			week = weeks.first();
+			count = 1;
 			while (week < 26) {
-				this.weeks.put(count, week);
+				year.get(2).put(count, week);
 				count++;
 				week = weeks.higher(week);
 			}
@@ -144,25 +151,37 @@ public class NavigationPanel extends JPanel implements ActionListener {
 	protected int getWeek() {
 		if (selectedWeek == 0)
 			return selectedWeek;
-		return weeks.get(selectedWeek);
+		return year.get(currentSemester).get(selectedWeek);
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() instanceof JButton) {
-			if (((JButton)e.getSource()).getText().equals("Next"))
+			if (((JButton)e.getSource()).getName().contains("next"))
 				nextWeek();
 			else
 				previousWeek();
 		}
 		observable.change();
 	}
+	
+	private void changeSemester() {
+		if (currentSemester > 1)
+			currentSemester = 1;
+		else
+			currentSemester = 2;
+	}
 
 	private void nextWeek() {
 		if (selectedWeek > 0) {
 			selectedWeek++;
-			if (!weeks.keySet().contains(selectedWeek))
+			if (selectedWeek > year.get(currentSemester).size()) {
+				changeSemester();
 				selectedWeek = 1;
+				if (selectedWeek > year.get(currentSemester).size()) {
+					changeSemester();
+				}
+			}
 			refresh();
 		}
 	}
@@ -170,15 +189,21 @@ public class NavigationPanel extends JPanel implements ActionListener {
 	private void previousWeek() {
 		if (selectedWeek > 0) {
 			selectedWeek--;
-			if (!weeks.keySet().contains(selectedWeek))
-				selectedWeek = weeks.keySet().size();
+			if (selectedWeek == 0) {
+				changeSemester();
+				selectedWeek = year.get(currentSemester).size();
+				if (selectedWeek == 0) {
+					changeSemester();
+					selectedWeek = year.get(currentSemester).size();
+				}
+			}
 			refresh();
 		}
 	}
 
 	private void refresh() {
 		if (selectedWeek > 0)
-			lblWeek.setText("Week " + weeks.get(selectedWeek));
+			lblWeek.setText("Semester: " + currentSemester +  " Week " + selectedWeek);
 		else 
 			lblWeek.setText("~");
 	}

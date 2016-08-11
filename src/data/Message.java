@@ -5,15 +5,15 @@ import java.util.HashMap;
 
 public class Message {
 
-	private HashMap<String, Integer> add;
+	private HashMap<Course, Integer> add;
 	private ArrayList<String> remove;
 	
-	public Message(HashMap<String, Integer> add, ArrayList<String> remove) {
+	public Message(HashMap<Course, Integer> add, ArrayList<String> remove) {
 		this.add = add;
 		this.remove = remove;
 	}
 
-	public HashMap<String, Integer> getAdd() {
+	public HashMap<Course, Integer> getAdd() {
 		return add;
 	}
 

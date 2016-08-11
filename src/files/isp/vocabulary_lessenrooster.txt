@@ -1,0 +1,14 @@
+type Slot isa int
+type Les
+type Overlap isa int
+
+HeeftLes(Vak,Les)
+Start(Les,Slot)
+Eindigt(Les,Slot)
+
+OverlapEersteSemesterPerFase(Fase) : Overlap
+OverlapTweedeSemesterPerFase(Fase) : Overlap
+OverlapPerVak(Vak,Vak) : Overlap
+OverlapPerLes(Les,Les) : Overlap
+OverlapPerFase(Fase) : Overlap
+OverlapTotaal : Overlap

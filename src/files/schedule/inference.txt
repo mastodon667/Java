@@ -1,2 +1,0 @@
-expansion;print(onemodel(T,S))
-minimization;print(minimize(T,S,O)[0])

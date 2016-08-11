@@ -1,14 +1,14 @@
 package reader;
 
+import global.Singleton;
+
 import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InvalidClassException;
-import java.io.OptionalDataException;
 import java.util.ArrayList;
 import java.util.HashMap;
+
 import automaton.Automaton;
 import automaton.State;
 import automaton.Transition;
@@ -18,31 +18,15 @@ public class AutomatonReader {
 	private Automaton isp;
 	private dk.brics.automaton.Automaton ispAlt;
 
-	public AutomatonReader(String vPath, String aPath) {
+	public AutomatonReader(String vPath, String aPath, Singleton s) {
 		try {
 			ArrayList<String> v = readVariables(vPath);
 			String[] variables = v.toArray(new String[v.size()]);
 			FileInputStream in = new FileInputStream(aPath);
 			ispAlt = dk.brics.automaton.Automaton.load(in);
-			isp = new Automaton(convert(0, variables, ispAlt.getInitialState(),new HashMap<dk.brics.automaton.State, State>()));
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (OptionalDataException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InvalidClassException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ClassCastException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			isp = new Automaton(convert(0, variables, ispAlt.getInitialState(),new HashMap<dk.brics.automaton.State, State>()), s);
+		} catch (ClassCastException | ClassNotFoundException | IOException e) {
+			isp = null;
 		}
 	}
 	
