@@ -114,8 +114,11 @@ public class InferenceHandler extends Observable {
 	private HashMap<String, Course> calculateUnsatStructure() {
 		Group programme = buildProgramme(new ArrayList<Course>(cUserChoices.values()));
 		HashMap<String, Course> unsatStructure = new HashMap<String, Course>();
-		for (String code : translator.filterUnsat(isp.unsat(parser.parseStructure(programme, ""), programme.countFreeVariables())))
+		for (String code : translator.filterUnsat(isp.unsat(parser.parseStructure(programme, ""), programme.countFreeVariables()))) {
 			unsatStructure.put(code, cUserChoices.get(code));
+			System.out.println(code);
+		}
+
 		return unsatStructure;
 	}
 	

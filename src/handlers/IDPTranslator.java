@@ -27,7 +27,7 @@ public class IDPTranslator {
 		for (String line : structure.split("\n")) {
 			if (line.contains("Geselecteerd ") || line.contains("Geselecteerd<ct>"))
 				updateSelected(line.replace("Geselecteerd", ""));
-			else if (line.contains("GeenInteresse"))
+			else if (line.contains("GeenInteresse ") || line.contains("GeenInteresse<ct>"))
 				updateNotInterested(line.replace("GeenInteresse", ""));
 		}
 	}
@@ -72,14 +72,13 @@ public class IDPTranslator {
 	}
 	
 	protected ArrayList<String> filterUnsat(String structure) {
-		System.out.println(structure);
 		TreeSet<String> unsatStructure = new TreeSet<String>();
 		for (String line : structure.split("\n")) {
-			if (line.contains("Geselecteerd<ct>") || line.contains("Geselecteerd<cf>"))
+			if (line.contains("Geselecteerd<ct>"))
 				for (String code : filterLine(line.replace("Geselecteerd", "")).split(";"))
 					if(!code.isEmpty())
-						unsatStructure.add(code);
-			if (line.contains("GeenInteresse"))
+						unsatStructure.add(code.split(",")[0]);
+			if (line.contains("GeenInteresse<ct>"))
 				for (String code : filterLine(line.replace("GeenInteresse", "")).split(";"))
 					if(!code.isEmpty())
 						unsatStructure.add(code);
