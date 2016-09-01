@@ -1,6 +1,10 @@
 package global;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import gui.EdjucationSelection;
@@ -9,13 +13,24 @@ public final class Singleton {
     
 	private static volatile Singleton instance;
 	
-	public final String IDP_LOCATION = "C:/Program Files/idp 3.5.0/bin/idp.bat";
-	public final String PROJECT_LOCATION = "C:/Users/Herbert/workspace/ISP/";
+	private String IDP_LOCATION;
 	private Edjucation programme;
 	
     private Singleton() { 
 		EdjucationSelection select = new EdjucationSelection();
 		programme = select.selectEdjucation();
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(this.getConfigPath()));
+			String line = br.readLine();
+			if (line == null)
+				line = "";
+			IDP_LOCATION = line;
+			br.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
     }
 
     public static Singleton getInstance() {
@@ -30,23 +45,31 @@ public final class Singleton {
     }
     
     public String getIspPath() {
-		return PROJECT_LOCATION + "src/files/isp/";
+		return "src/files/isp/";
 	}
     
+    public String getIdpPath() {
+    	return IDP_LOCATION;
+    }
+    
     public String getExplanationsPath() {
-		return PROJECT_LOCATION + "src/files/explanations/";
+		return "src/files/explanations/";
 	}
+    
+    public String getConfigPath() {
+    	return "src/files/config/config.txt";
+    }
 	
 	public String getSchedulePath() {
-		return PROJECT_LOCATION + "src/files/schedule/";
+		return "src/files/schedule/";
 	}
 	
 	public String getJsonPath() {
-		return PROJECT_LOCATION + "src/files/json/" + programme.getJson();
+		return "src/files/json/" + programme.getJson();
 	}
 	
 	public ArrayList<String> getLessonsPaths() {
-		File location = new File(PROJECT_LOCATION + "src/files/lessons/");
+		File location = new File("src/files/lessons/");
 		ArrayList<String> files = new ArrayList<String>();
 		for (File file : location.listFiles()) {
 			files.add(file.getAbsolutePath());
@@ -55,18 +78,18 @@ public final class Singleton {
 	}
 	
 	public String getShadowPath() {
-		return PROJECT_LOCATION + "src/files/shadow/shadowcourses.txt";
+		return "src/files/shadow/shadowcourses.txt";
 	}
 	
 	public String getResultPath() {
-		return PROJECT_LOCATION + "src/files/log/results.txt";
+		return "src/files/log/results.txt";
 	}
 	
 	public String getAutomatonPath() {
-		return PROJECT_LOCATION + "src/files/automaton/" + programme.getAutomaton();
+		return "src/files/automaton/" + programme.getAutomaton();
 	}
 	
 	public String getVariablesPath() {
-		return PROJECT_LOCATION + "src/files/automaton/" + programme.getVariables();
+		return "src/files/automaton/" + programme.getVariables();
 	}
 }

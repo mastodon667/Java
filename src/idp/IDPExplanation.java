@@ -97,7 +97,7 @@ public class IDPExplanation {
 		String output = "";
 		long startTime = System.nanoTime();
 		try {
-			Process p = Runtime.getRuntime().exec(s.IDP_LOCATION);
+			Process p = Runtime.getRuntime().exec(s.getIdpPath());
 			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			BufferedWriter out = new BufferedWriter(new OutputStreamWriter(p.getOutputStream()));
 			out.write(input);
