@@ -52,7 +52,7 @@ public class MainScreen extends JFrame {
 	public static void main(String[] args) {
 		Singleton s = Singleton.getInstance();
 		File f = new File(s.getIdpPath());
-		if (!f.exists() || f.isDirectory() || !s.getIdpPath().endsWith("idp.bat")) {
+		if (!f.exists() || f.isDirectory() || (!s.getIdpPath().endsWith("idp.bat") && !s.getIdpPath().endsWith("idp"))) {
 			int option = JOptionPane.showConfirmDialog(null, "<html>Could not find idp.bat file, please select file location and then restart the application.</html>");
 			if (option == JOptionPane.YES_OPTION) {
 				JFileChooser fc = new JFileChooser();
