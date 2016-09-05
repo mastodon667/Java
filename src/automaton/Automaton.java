@@ -93,7 +93,7 @@ public class Automaton {
 			long startTime = System.nanoTime();
 			develop(initialState, "", "");
 			long endTime = System.nanoTime();
-			writeTime("solutions" + " ()", startTime, endTime, states.size() - selection.size());
+			//writeTime("solutions" + " ()", startTime, endTime, states.size() - selection.size());
 			for (String solution : restorations) {
 				HashMap<String, Character> sol = new HashMap<String, Character>();
 				for (String code : solution.split(" "))

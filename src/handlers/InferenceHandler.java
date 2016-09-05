@@ -89,6 +89,10 @@ public class InferenceHandler extends Observable {
 		update();
 		bProgramme = cProgramme.clone();
 	}
+	
+	public boolean bootTest() {
+		return isp.bootTest();
+	}
 
 	private boolean sat() {
 		Group programme = buildProgramme(new ArrayList<Course>(cUserChoices.values()));
@@ -116,7 +120,6 @@ public class InferenceHandler extends Observable {
 		HashMap<String, Course> unsatStructure = new HashMap<String, Course>();
 		for (String code : translator.filterUnsat(isp.unsat(parser.parseStructure(programme, ""), programme.countFreeVariables()))) {
 			unsatStructure.put(code, cUserChoices.get(code));
-			System.out.println(code);
 		}
 
 		return unsatStructure;

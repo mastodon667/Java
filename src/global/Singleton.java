@@ -44,6 +44,14 @@ public final class Singleton {
         return instance;
     }
     
+    public String getBootPath() {
+    	return "src/files/test/boot_test.txt";
+    }
+    
+    public String getBootResultPath() {
+    	return "src/files/test/boot_test_result.txt";
+    }
+    
     public String getIspPath() {
 		return "src/files/isp/";
 	}

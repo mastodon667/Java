@@ -127,7 +127,7 @@ public class IDPISP {
 			e.printStackTrace();
 		}
 		long endTime = System.nanoTime();
-		writeTime(inference + " (" + term + ")", startTime, endTime, freeVariables);
+		//writeTime(inference + " (" + term + ")", startTime, endTime, freeVariables);
 		return output;
 	}
 	
@@ -167,5 +167,11 @@ public class IDPISP {
 		input += "Term O : V { \n";
 		input += terms.get(term) + "\n}\n";
 		return open(input, "minimization", term, freeVariables);
+	}
+	
+	public boolean bootTest() {
+		String input = read(s.getBootPath());
+		String result = read(s.getBootResultPath());
+		return open(input, "boot", "", 0).contains(result);
 	}
 }

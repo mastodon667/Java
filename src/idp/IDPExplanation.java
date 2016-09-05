@@ -113,7 +113,7 @@ public class IDPExplanation {
 			e.printStackTrace();
 		}
 		long endTime = System.nanoTime();
-		writeTime(inference + " (" + term + ")", startTime, endTime, freeVariables);
+		//writeTime(inference + " (" + term + ")", startTime, endTime, freeVariables);
 		return output;
 	}
 	

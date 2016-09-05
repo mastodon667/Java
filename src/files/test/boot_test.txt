@@ -1,0 +1,20 @@
+vocabulary V{
+    type age isa int
+	x:age
+	y:age
+}
+
+theory T: V{
+    x - 2*y = 1.
+    x +y >= 70.
+    x + y =< 80.
+}
+
+structure S:V{
+    age = {1..100}
+}
+
+procedure main(){
+    stdoptions.cpsupport=true
+	printmodels(allmodels(T,S))
+}

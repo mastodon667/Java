@@ -1,9 +1,11 @@
 package gui;
 
+import java.awt.EventQueue;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 
 import global.Singleton;
 import handlers.InferenceHandler;
@@ -30,43 +32,54 @@ public class MainScreen extends JFrame {
 
 		Singleton s = Singleton.getInstance();
 		InferenceHandler iHandler = new InferenceHandler(s);
-		ScheduleHandler sHandler = new ScheduleHandler(iHandler.getProgramme().getStages());
-		iHandler.addObserver(sHandler);
-		
-		tpPanels = new JTabbedPane();
-		pnlCalendar = new CalendarPanel(s, sHandler);
-		pnlSelection = new SelectionPanel(this, s, iHandler);
-		tpPanels.add(pnlSelection,"Selection");
-		tpPanels.add(pnlCalendar,"Schedule");
-		add(tpPanels);
-		tpPanels.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent e) {
-				if (tpPanels.getSelectedIndex() == 1)
-					pnlCalendar.refresh();
-			}
-		});
-		setVisible(true);
+		if (iHandler.bootTest()) {
+			ScheduleHandler sHandler = new ScheduleHandler(iHandler.getProgramme().getStages());
+			iHandler.addObserver(sHandler);
+
+			tpPanels = new JTabbedPane();
+			pnlCalendar = new CalendarPanel(s, sHandler);
+			pnlSelection = new SelectionPanel(this, s, iHandler);
+			tpPanels.add(pnlSelection,"Selection");
+			tpPanels.add(pnlCalendar,"Schedule");
+			add(tpPanels);
+			tpPanels.addChangeListener(new ChangeListener() {
+				@Override
+				public void stateChanged(ChangeEvent e) {
+					if (tpPanels.getSelectedIndex() == 1)
+						pnlCalendar.refresh();
+				}
+			});
+			setVisible(true);
+		}
+		else {
+			JOptionPane.showMessageDialog(null, "IDP is not working properly. Please make sure that IDP is working correctly and that all the settings are set to the standard settings.");
+			dispose();
+		}
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InvocationTargetException, InterruptedException {
 		Singleton s = Singleton.getInstance();
 		File f = new File(s.getIdpPath());
 		if (!f.exists() || f.isDirectory() || (!s.getIdpPath().endsWith("idp.bat") && !s.getIdpPath().endsWith("idp"))) {
 			int option = JOptionPane.showConfirmDialog(null, "<html>Could not find idp.bat file, please select file location and then restart the application.</html>");
 			if (option == JOptionPane.YES_OPTION) {
-				JFileChooser fc = new JFileChooser();
-				int returnVal = fc.showOpenDialog(null);
-				if (returnVal == JFileChooser.APPROVE_OPTION) {
-					String location = fc.getSelectedFile().getAbsolutePath();
-					try {
-						BufferedWriter bw = new BufferedWriter(new FileWriter(s.getConfigPath(), false));
-						bw.write(location);
-						bw.close();
-					} catch (IOException e) {
-						e.printStackTrace();
+				EventQueue.invokeAndWait(new Runnable(){
+					@Override
+					public void run() {
+						JFileChooser fc = new JFileChooser();
+						int returnVal = fc.showOpenDialog(null);
+						if (returnVal == JFileChooser.APPROVE_OPTION) {
+							String location = fc.getSelectedFile().getAbsolutePath();
+							try {
+								BufferedWriter bw = new BufferedWriter(new FileWriter(s.getConfigPath(), false));
+								bw.write(location);
+								bw.close();
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						}
 					}
-				}
+				});
 			}
 		}
 		else {
